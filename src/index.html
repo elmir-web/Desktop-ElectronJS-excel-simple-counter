@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Тестовая софтина Elmir Kuba</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .input-name-book-of-input-file {
+        display: none;
+        width: 100%;
+      }
+
+      #butt-input-book-name,
+      #input-name-book-ui,
+      #butt-read-selected-book {
+        display: none;
+      }
+
+      #json-excel-input-file {
+        display: none;
+        width: 100%;
+        height: 300px;
+      }
+
+      #after-read-input-excel-file,
+      #items-readed-array-zero-names-column {
+        display: none;
+      }
+
+      #name-colum-excel-1,
+      #name-colum-excel-2 {
+        display: none;
+        width: 100%;
+      }
+
+      #workedOfObjectCountWrite,
+      #finishActionWorkedCountedRows,
+      #finishActionGoToSaveNewFile {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <input type="file" id="input-file" /> -->
+
+    <button id="butt-input-file">
+      Нажмите суда, чтобы выбрать первичный файл
+    </button>
+
+    <br />
+
+    <p id="output-info-all-books-input-file"></p>
+
+    <br />
+
+    <input
+      type="text"
+      placeholder="Введите правильное название книги"
+      class="input-name-book-of-input-file"
+    />
+
+    <br />
+
+    <button id="butt-input-book-name">
+      Нажмите суда, когда введете название в поле выше
+    </button>
+
+    <br />
+
+    <p id="input-name-book-ui"></p>
+
+    <br />
+
+    <button id="butt-read-selected-book">прочитать книгу</button>
+
+    <br />
+
+    <textarea id="json-excel-input-file"></textarea>
+
+    <br />
+
+    <p id="after-read-input-excel-file">
+      Теперь программа может посчитать строки "ЧЕГО-то" по принципу:<br />
+      1. Одна ячейка на этой строке не пустая или неопределена<br />
+      2. Вторая ячейка на этой строке имеет значение<br />
+      <br />
+      <br />
+      Введите эти два названия колонок (без ошибок в два поля ниже (по
+      порядку!)) в два поле ниже (только два значения!):
+    </p>
+
+    <br />
+
+    <p id="items-readed-array-zero-names-column"></p>
+
+    <br />
+
+    <input
+      type="text"
+      id="name-colum-excel-1"
+      placeholder="Название первой колонки"
+    />
+    <input
+      type="text"
+      id="name-colum-excel-2"
+      placeholder="Название второй колонки"
+    />
+    <button id="workedOfObjectCountWrite">Обработать!</button>
+
+    <br />
+
+    <p id="finishActionWorkedCountedRows">Я смог обработать: "ЧИСЛО" строк</p>
+
+    <br />
+
+    <button id="finishActionGoToSaveNewFile">Сохранить в файл?</button>
+
+    <script>
+      const remote = require('electron').remote;
+      const xlsx = require('xlsx');
+
+      window.onload = () => {
+        const nameBookInputFile = document.querySelector(
+          '.input-name-book-of-input-file'
+        );
+        const buttonInputFile = document.querySelector('#butt-input-file');
+        let inputFilePath = null;
+        const paragraphInfoAllBooks = document.querySelector(
+          '#output-info-all-books-input-file'
+        );
+        const buttonInputBookName = document.querySelector(
+          '#butt-input-book-name'
+        );
+        const paragraphInputNameBookUI = document.querySelector(
+          '#input-name-book-ui'
+        );
+        const buttonReadSelectedBook = document.querySelector(
+          '#butt-read-selected-book'
+        );
+        const textareaJSONExcelInputFile = document.querySelector(
+          '#json-excel-input-file'
+        );
+        const paragraphAfterReadInputExcelFile = document.querySelector(
+          '#after-read-input-excel-file'
+        );
+        const paragraphNamesItemsColumnExcelFile = document.querySelector(
+          '#items-readed-array-zero-names-column'
+        );
+        const nameColumnExcel1 = document.querySelector('#name-colum-excel-1');
+        const nameColumnExcel2 = document.querySelector('#name-colum-excel-2');
+        const buttonActionCountedExcelRows = document.querySelector(
+          '#workedOfObjectCountWrite'
+        );
+        const paragraphFinishActWorkCountRows = document.querySelector(
+          '#finishActionWorkedCountedRows'
+        );
+        const buttonFinishActGoToSaveNewFile = document.querySelector(
+          '#finishActionGoToSaveNewFile'
+        );
+
+        let wb = null;
+        let wsName = null;
+        let ws = null;
+        let data = null;
+        let newData = null;
+        let count = null;
+
+        let newWB = null;
+        let newWS = null;
+
+        buttonInputFile.addEventListener('click', () => {
+          inputFilePath = remote.dialog.showOpenDialogSync({
+            title: 'открыть',
+            message: 'открыть?',
+          });
+
+          wb = xlsx.readFile(inputFilePath[0], { cellDates: true });
+
+          paragraphInfoAllBooks.innerHTML = `В выбранном файле есть следующие книги:<br/>`;
+
+          for (let index = 0; index < Object.keys(wb.Sheets).length; index++) {
+            paragraphInfoAllBooks.innerHTML += `${index + 1}: ${
+              Object.keys(wb.Sheets)[index]
+            } <br/>`;
+            console.log(Object.keys(wb.Sheets)[index]);
+          }
+
+          nameBookInputFile.style.display = 'block';
+          buttonInputBookName.style.display = 'block';
+        });
+
+        buttonInputBookName.addEventListener('click', () => {
+          wsName = nameBookInputFile.value;
+
+          paragraphInputNameBookUI.innerHTML = `Выбрана книга: "${wsName}"`;
+
+          paragraphInputNameBookUI.style.display = 'block';
+
+          ws = wb.Sheets[wsName];
+
+          buttonReadSelectedBook.style.display = 'block';
+        });
+
+        buttonReadSelectedBook.addEventListener('click', () => {
+          data = xlsx.utils.sheet_to_json(ws);
+
+          paragraphAfterReadInputExcelFile.style.display = 'block';
+
+          for (let index = 0; index < Object.keys(data[0]).length; index++) {
+            paragraphNamesItemsColumnExcelFile.innerHTML += `${index + 1}. ${
+              Object.keys(data[0])[index]
+            }<br/>`;
+          }
+
+          paragraphNamesItemsColumnExcelFile.style.display = 'block';
+
+          nameColumnExcel1.style.display = 'block';
+          nameColumnExcel2.style.display = 'block';
+          buttonActionCountedExcelRows.style.display = 'block';
+        });
+
+        buttonActionCountedExcelRows.addEventListener('click', () => {
+          paragraphFinishActWorkCountRows.style.display = 'block';
+
+          newData = data.map((item) => {
+            let tempNewItem = Object.assign({ НОМЕРСТРОКИ: '' }, item);
+
+            if (
+              (tempNewItem[nameColumnExcel1.value] === undefined ||
+                !tempNewItem[nameColumnExcel1.value]) && // !СМОТРИМ, чтобы имя пользователя или пустое или не определено
+              tempNewItem[nameColumnExcel2.value] !== '' // !И одновременно ПРИ ЭТОМ номер документа пустой
+            ) {
+              count++;
+
+              tempNewItem[`НОМЕРСТРОКИ`] = `${count}`;
+
+              paragraphFinishActWorkCountRows.innerHTML = `Я смог обработать: "${count}" строк`;
+            }
+
+            buttonFinishActGoToSaveNewFile.style.display = 'block';
+
+            return tempNewItem;
+          });
+        });
+
+        buttonFinishActGoToSaveNewFile.addEventListener('click', () => {
+          newWB = xlsx.utils.book_new();
+
+          try {
+            newWS = xlsx.utils.json_to_sheet(newData);
+          } catch (error) {
+            window.alert(`Ошибка 11 (JSON to XLSX):`);
+            console.log(error);
+          }
+
+          xlsx.utils.book_append_sheet(newWB, newWS, 'New Data');
+
+          // console.log(inputFilePath[0]);
+          // console.log(inputFilePath[0].length);
+
+          const newFile = remote.dialog.showSaveDialogSync({
+            title: 'сохранить',
+            message: 'сохранить?',
+            filters: [{ name: 'EXCEL 2007+', extensions: ['xlsx'] }],
+          });
+
+          xlsx.writeFile(newWB, newFile);
+
+          window.alert(`Я все! АЦТАН от меня!!!!11один11!одинодин!!1`);
+        });
+      };
+    </script>
+  </body>
+</html>
